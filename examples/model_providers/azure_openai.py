@@ -32,15 +32,12 @@ def get_weather(city: str):
 async def main(api_base: str, api_version: str, deployment_name: str, api_key: str):
     # The model name format for Azure OpenAI is "azure/<deployment-name>"
     model_name = f"azure/{deployment_name}"
-    
+
     agent = Agent(
         name="Assistant",
         instructions="You only respond in haikus.",
         model=LitellmModel(
-            model=model_name,
-            api_base=api_base,
-            api_version=api_version,
-            api_key=api_key
+            model=model_name, api_base=api_base, api_version=api_version, api_key=api_key
         ),
         tools=[get_weather],
     )
@@ -54,24 +51,24 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--api-base", type=str, 
-                        default=os.environ.get("AZURE_API_BASE"))
-    parser.add_argument("--api-version", type=str, 
-                        default=os.environ.get("AZURE_API_VERSION"))
-    parser.add_argument("--deployment-name", type=str, 
-                        default=os.environ.get("AZURE_DEPLOYMENT_NAME"))
-    parser.add_argument("--api-key", type=str, 
-                        default=os.environ.get("AZURE_API_KEY"))
+    parser.add_argument("--api-base", type=str, default=os.environ.get("AZURE_API_BASE"))
+    parser.add_argument("--api-version", type=str, default=os.environ.get("AZURE_API_VERSION"))
+    parser.add_argument(
+        "--deployment-name", type=str, default=os.environ.get("AZURE_DEPLOYMENT_NAME")
+    )
+    parser.add_argument("--api-key", type=str, default=os.environ.get("AZURE_API_KEY"))
     args = parser.parse_args()
 
     api_base = args.api_base
     if not api_base:
-        api_base = input("Enter your Azure API base (e.g., https://your-resource.openai.azure.com/): ")
+        api_base = input(
+            "Enter your Azure API base (e.g., https://your-resource.openai.azure.com/): "
+        )
 
     api_version = args.api_version
     if not api_version:
         api_version = input("Enter your Azure API version (e.g., 2023-05-15): ")
-        
+
     deployment_name = args.deployment_name
     if not deployment_name:
         deployment_name = input("Enter your Azure deployment name: ")
