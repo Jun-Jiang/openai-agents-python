@@ -13,7 +13,7 @@ uv run examples/model_providers/azure_openai.py --api-base https://your-resource
 
 Azure OpenAI requires these configuration parameters:
 - api_base: Azure endpoint URL (e.g., "https://your-resource.openai.azure.com/")
-- api_version: Azure API version (e.g., "2023-05-15") 
+- api_version: Azure API version (e.g., "2023-05-15")
 - api_key: Azure API key
 - deployment_name: Your Azure OpenAI deployment name
 
