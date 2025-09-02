@@ -1,0 +1,104 @@
+diff --git a/src/agents/extensions/models/litellm_model.py b/src/agents/extensions/models/litellm_model.py
+index whatever..whatever 100644
+--- a/src/agents/extensions/models/litellm_model.py
++++ b/src/agents/extensions/models/litellm_model.py
+@@ -61,13 +61,25 @@ class LitellmModel(Model):
+     """This class enables using any model via LiteLLM. LiteLLM allows you to acess OpenAPI,
+     Anthropic, Gemini, Mistral, and many other models.
+     See supported models here: [litellm models](https://docs.litellm.ai/docs/providers).
++    
++    For Azure OpenAI models, use the model format "azure/<deployment-name>" and provide the required
++    Azure-specific parameters (api_base, api_version, api_key).
+     """
+ 
+     def __init__(
+         self,
+         model: str,
+         base_url: str | None = None,
+         api_key: str | None = None,
++        # Azure-specific parameters
++        api_base: str | None = None,
++        api_version: str | None = None,
++        azure_ad_token: str | None = None,
++        # Additional configuration
++        extra_headers: dict[str, str] | None = None,
++        **kwargs: Any,
+     ):
+         self.model = model
+         self.base_url = base_url
+@@ -75,6 +87,18 @@ class LitellmModel(Model):
+         self.base_url = base_url
+         self.api_key = api_key
+ 
++        # Store Azure-specific parameters
++        self.api_base = api_base
++        self.api_version = api_version
++        self.azure_ad_token = azure_ad_token
++
++        # Additional configuration
++        self.extra_headers = extra_headers or {}
++        
++        # Store any additional kwargs for flexible configuration
++        self.kwargs = kwargs
++        
++        # Enable token refresh for Azure by default if not explicitly disabled
++        litellm.enable_azure_ad_token_refresh = kwargs.get("enable_azure_ad_token_refresh", True)
++
+     async def get_response(
+         self,
+         system_instructions: str | None,
+@@ -169,6 +193,16 @@ class LitellmModel(Model):
+             kwargs["stop_sequences"] = stop_sequences
+             _debug.print_verbose(f"stop_sequences={stop_sequences}")
+ 
++        # Add Azure-specific parameters if provided
++        if self.api_base:
++            kwargs["api_base"] = self.api_base
++        if self.api_version:
++            kwargs["api_version"] = self.api_version
++        if self.azure_ad_token:
++            kwargs["azure_ad_token"] = self.azure_ad_token
++        if self.extra_headers:
++            kwargs["extra_headers"] = self.extra_headers
++
+         # Logging the options
+         if _debug.is_verbose_enabled():
+             options_str = json.dumps(
+@@ -291,6 +325,36 @@ class LitellmModel(Model):
+ 
+         return usage
+ 
++    @classmethod
++    def from_azure_config(
++        cls,
++        deployment_name: str,
++        api_base: str,
++        api_version: str,
++        api_key: str | None = None,
++        azure_ad_token: str | None = None,
++        **kwargs: Any,
++    ) -> "LitellmModel":
++        """Create a LitellmModel for Azure OpenAI with the specified configuration.
++        
++        This helper method makes it easier to create an Azure OpenAI model with the correct parameters.
++        
++        Args:
++            deployment_name: The name of your Azure OpenAI deployment
++            api_base: The Azure endpoint URL (e.g., "https://your-resource.openai.azure.com/")
++            api_version: The Azure API version (e.g., "2023-05-15")
++            api_key: The Azure API key (optional if using azure_ad_token)
++            azure_ad_token: The Azure AD token (optional if using api_key)
++            **kwargs: Additional parameters to pass to LitellmModel
++            
++        Returns:
++            A configured LitellmModel instance ready to use with Azure OpenAI
++        """
++        model_name = f"azure/{deployment_name}"
++        return cls(
++            model=model_name, api_base=api_base, api_version=api_version,
++            api_key=api_key, azure_ad_token=azure_ad_token, **kwargs
++        )
++
+ 
+ class LitellmConverter:
+     @classmethod
