@@ -5,6 +5,36 @@ The Agents SDK comes with out-of-the-box support for OpenAI models in two flavor
 -   **Recommended**: the [`OpenAIResponsesModel`][agents.models.openai_responses.OpenAIResponsesModel], which calls OpenAI APIs using the new [Responses API](https://platform.openai.com/docs/api-reference/responses).
 -   The [`OpenAIChatCompletionsModel`][agents.models.openai_chatcompletions.OpenAIChatCompletionsModel], which calls OpenAI APIs using the [Chat Completions API](https://platform.openai.com/docs/api-reference/chat).
 
+## Azure OpenAI
+
+You can also use models hosted on Azure OpenAI. First, make sure you have the necessary credentials from your Azure account:
+
+*   API Key
+*   API Version
+*   Azure Endpoint
+*   Azure Deployment Name
+
+Then, you can use the `AzureProvider` to configure your agent:
+
+```python
+from agents import Agent, AzureProvider
+
+azure_provider = AzureProvider(
+    api_key="...",
+    api_version="...",
+    azure_endpoint="...",
+    azure_deployment="...",
+)
+
+agent = Agent(
+    name="MyAzureAgent",
+    instructions="You are a helpful assistant.",
+    model_provider=azure_provider,
+)
+```
+
+You can find a runnable example [here](https://github.com/openai/openai-agents-python/tree/main/examples/model_providers/azure_provider.py).
+
 ## Non-OpenAI models
 
 You can use most other non-OpenAI models via the [LiteLLM integration](./litellm.md). First, install the litellm dependency group:
